@@ -63,11 +63,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance==TIM1)
 	{
-		SPEED = MOTOR_CountSpeed();
-		PWM = PID_Calculate(&pid_speed, SET_SPEED, SPEED);
-		PWM = PWM > 900 ? 900 : PWM;
-		PWM = PWM < -900 ? -900 : PWM;
-		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, PWM);
 	}
 }
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
@@ -115,13 +110,16 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
-  MOTOR_Direction(forward);
-  PID_Init(&pid_speed, p_set, i_set, d_set);
   HAL_TIM_Base_Start_IT(&htim1);
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
+  HAL_GPIO_WritePin(in1_1_GPIO_Port, in1_1_Pin, SET);
+  HAL_GPIO_WritePin(in1_2_GPIO_Port, in1_2_Pin, RESET);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 600);
+  HAL_GPIO_WritePin(in2_1_GPIO_Port, in2_1_Pin, SET);
+  HAL_GPIO_WritePin(in2_2_GPIO_Port, in2_2_Pin, RESET);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 600);
   zigbee_Init(&huart2);
   u1_printf("hello\n");
   /* USER CODE END 2 */

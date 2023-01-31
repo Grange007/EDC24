@@ -25,25 +25,34 @@ int PID_Calculate(PID_Typedef *pid, float set_value, float now_value );
 typedef enum
 {
 	forward,
-	back
-}Direction;
+	back,
+	left,
+	right
+}Direction;			//小车行驶方向
+
+typedef enum
+{
+	positive,
+	negative
+}Turn;				//电机转动方向
 
 typedef struct
 {
-	Direction dic;
+	Turn dic;
 	int spd;
 }MOTOR_Typedef;
 
-void MOTOR_Direction(Direction d);
-float MOTOR_CountSpeed();
+void MOTOR_Direction(Turn d, uint8_t index);
+void MOTOR_Straight(Direction d);
+float MOTOR_CountSpeed(uint8_t index);
 
-extern MOTOR_Typedef motor;
-extern PID_Typedef pid_speed;
+extern MOTOR_Typedef motor[5];			//4个电机的方向和速度
+extern PID_Typedef pid_speed[5];		//4个电机的pid
 
-extern float SPEED;
-extern float SET_SPEED;
-extern int PWM;
-extern float p_set;
+extern int PWM[5];						//电机的PWM输入量
+
+
+extern float p_set;						//设置pid的系数
 extern float i_set;
 extern float d_set;
 

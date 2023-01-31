@@ -57,10 +57,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define in2_3_Pin GPIO_PIN_2
-#define in2_3_GPIO_Port GPIOC
-#define in2_4_Pin GPIO_PIN_3
-#define in2_4_GPIO_Port GPIOC
+#define in2_1_Pin GPIO_PIN_2
+#define in2_1_GPIO_Port GPIOC
+#define in2_2_Pin GPIO_PIN_3
+#define in2_2_GPIO_Port GPIOC
 #define Encoder3A_Pin GPIO_PIN_0
 #define Encoder3A_GPIO_Port GPIOA
 #define Encoder3B_Pin GPIO_PIN_1
@@ -73,6 +73,14 @@ void Error_Handler(void);
 #define in1_2_GPIO_Port GPIOB
 #define in1_1_Pin GPIO_PIN_1
 #define in1_1_GPIO_Port GPIOB
+#define in3_1_Pin GPIO_PIN_12
+#define in3_1_GPIO_Port GPIOB
+#define in3_2_Pin GPIO_PIN_13
+#define in3_2_GPIO_Port GPIOB
+#define in4_1_Pin GPIO_PIN_14
+#define in4_1_GPIO_Port GPIOB
+#define in4_2_Pin GPIO_PIN_15
+#define in4_2_GPIO_Port GPIOB
 #define Encoder4A_Pin GPIO_PIN_6
 #define Encoder4A_GPIO_Port GPIOC
 #define Encoder4B_Pin GPIO_PIN_7
@@ -81,6 +89,10 @@ void Error_Handler(void);
 #define PWM1_GPIO_Port GPIOA
 #define PWM2_Pin GPIO_PIN_9
 #define PWM2_GPIO_Port GPIOA
+#define PWM3_Pin GPIO_PIN_10
+#define PWM3_GPIO_Port GPIOA
+#define PWM4_Pin GPIO_PIN_11
+#define PWM4_GPIO_Port GPIOA
 #define Encoder1A_Pin GPIO_PIN_15
 #define Encoder1A_GPIO_Port GPIOA
 #define Encoder1B_Pin GPIO_PIN_3

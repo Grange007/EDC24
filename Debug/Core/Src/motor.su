@@ -1,5 +1,6 @@
-../Core/Src/motor.c:13:6:MOTOR_Direction	16	static
-../Core/Src/motor.c:33:7:MOTOR_CountSpeed	16	static
-../Core/Src/motor.c:48:6:PID_Init	24	static
-../Core/Src/motor.c:63:6:PID_Clear	16	static
-../Core/Src/motor.c:79:5:PID_Calculate	32	static
+../Core/Src/motor.c:11:6:MOTOR_Direction	16	static
+../Core/Src/motor.c:69:6:MOTOR_Straight	16	static
+../Core/Src/motor.c:94:7:MOTOR_CountSpeed	24	static
+../Core/Src/motor.c:132:6:PID_Init	24	static
+../Core/Src/motor.c:147:6:PID_Clear	16	static
+../Core/Src/motor.c:163:5:PID_Calculate	32	static

@@ -1,42 +1,126 @@
 #include "motor.h"
 
-MOTOR_Typedef motor;
-PID_Typedef pid_speed;
+MOTOR_Typedef motor[5];
+PID_Typedef pid[5];
 
-float SPEED;
-float SET_SPEED = 160;
-int PWM;
+int PWM[5];
 float p_set = 4.f;
 float i_set = 0.1f;
 float d_set = 0.f;
 
-void MOTOR_Direction(Direction d)
+void MOTOR_Direction(Turn d, uint8_t index)
 {
-  if (d == forward)
-  {
-    motor.dic = forward;
-    HAL_GPIO_WritePin(in1_1_GPIO_Port, in1_1_Pin, SET);
-    HAL_GPIO_WritePin(in1_2_GPIO_Port, in1_2_Pin, RESET);
-    HAL_GPIO_WritePin(in2_3_GPIO_Port, in2_3_Pin, SET);
-	HAL_GPIO_WritePin(in2_4_GPIO_Port, in2_4_Pin, RESET);
-  }
-  else
-  {
-    motor.dic = back;
-    HAL_GPIO_WritePin(in1_1_GPIO_Port, in1_1_Pin, RESET);
-    HAL_GPIO_WritePin(in1_2_GPIO_Port, in1_2_Pin, SET);
-    HAL_GPIO_WritePin(in2_3_GPIO_Port, in2_3_Pin, RESET);
-	HAL_GPIO_WritePin(in2_4_GPIO_Port, in2_4_Pin, SET);
+	motor[index].dic = d;
+	switch (index)
+	{
+		case 1:
+			if (d == positive)
+			{
+				HAL_GPIO_WritePin(in1_1_GPIO_Port, in1_1_Pin, SET);
+				HAL_GPIO_WritePin(in1_2_GPIO_Port, in1_2_Pin, RESET);
+			}
+			else if (d == negative)
+			{
+				HAL_GPIO_WritePin(in1_1_GPIO_Port, in1_1_Pin, RESET);
+				HAL_GPIO_WritePin(in1_2_GPIO_Port, in1_2_Pin, SET);
+
+			}
+			break;
+		case 2:
+			if (d == positive)
+			{
+				HAL_GPIO_WritePin(in2_1_GPIO_Port, in2_1_Pin, SET);
+				HAL_GPIO_WritePin(in2_2_GPIO_Port, in2_2_Pin, RESET);
+
+			}
+			else if (d == negative)
+			{
+				HAL_GPIO_WritePin(in2_1_GPIO_Port, in2_1_Pin, RESET);
+				HAL_GPIO_WritePin(in2_2_GPIO_Port, in2_2_Pin, SET);
+			}
+			break;
+		case 3:
+			if (d == positive)
+			{
+				HAL_GPIO_WritePin(in3_1_GPIO_Port, in3_1_Pin, SET);
+				HAL_GPIO_WritePin(in3_2_GPIO_Port, in3_2_Pin, RESET);
+			}
+			else if (d == negative)
+			{
+				HAL_GPIO_WritePin(in3_1_GPIO_Port, in3_1_Pin, RESET);
+				HAL_GPIO_WritePin(in3_2_GPIO_Port, in3_2_Pin, SET);
+			}
+			break;
+		case 4:
+			if (d == positive)
+			{
+				HAL_GPIO_WritePin(in4_1_GPIO_Port, in4_1_Pin, SET);
+				HAL_GPIO_WritePin(in4_2_GPIO_Port, in4_2_Pin, RESET);
+			}
+			else if (d == negative)
+			{
+				HAL_GPIO_WritePin(in4_1_GPIO_Port, in4_1_Pin, RESET);
+				HAL_GPIO_WritePin(in4_2_GPIO_Port, in4_2_Pin, SET);
+			}
+			break;
   }
 }
 
-float MOTOR_CountSpeed()
+void MOTOR_Straight(Direction d)
+{
+	if (d == forward)
+	{
+		MOTOR_Direction(forward, 1);
+		MOTOR_Direction(forward, 3);
+	}
+	else if (d == back)
+	{
+		MOTOR_Direction(back, 1);
+		MOTOR_Direction(back, 3);
+	}
+	else if (d == left)
+	{
+		MOTOR_Direction(forward, 2);
+		MOTOR_Direction(forward, 4);
+	}
+	else if (d == right)
+	{
+		MOTOR_Direction(back, 2);
+		MOTOR_Direction(back, 4);
+	}
+}
+
+
+float MOTOR_CountSpeed(uint8_t index)
 {
   int32_t cnt = 0;
-  cnt = __HAL_TIM_GET_COUNTER(&htim2);
-  cnt = (int16_t)cnt;
-  __HAL_TIM_SET_COUNTER(&htim2, 0);
-  return (float)cnt * 1000 / circle * 2 * PI * radius;
+  switch (index)
+  {
+  	  case 1:
+  		  cnt = __HAL_TIM_GET_COUNTER(&htim2);
+  		  cnt = (int16_t)cnt;
+  		  __HAL_TIM_SET_COUNTER(&htim2, 0);
+  		  return (float)cnt * 1000 / circle * 2 * PI * radius;
+  		  break;
+  	  case 2:
+  		  cnt = __HAL_TIM_GET_COUNTER(&htim3);
+  		  cnt = (int16_t)cnt;
+  		  __HAL_TIM_SET_COUNTER(&htim3, 0);
+  		  return (float)cnt * 1000 / circle * 2 * PI * radius;
+  		  break;
+  	  case 3:
+  		  cnt = __HAL_TIM_GET_COUNTER(&htim5);
+  		  cnt = (int16_t)cnt;
+  		  __HAL_TIM_SET_COUNTER(&htim5, 0);
+  		  return (float)cnt * 1000 / circle * 2 * PI * radius;
+  		  break;
+  	  case 4:
+  		  cnt = __HAL_TIM_GET_COUNTER(&htim8);
+  		  cnt = (int16_t)cnt;
+  		  __HAL_TIM_SET_COUNTER(&htim8, 0);
+  		  return (float)cnt * 1000 / circle * 2 * PI * radius;
+  		  break;
+  }
 }
 /**
   * @brief Initialize PID
