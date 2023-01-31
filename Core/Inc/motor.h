@@ -42,8 +42,8 @@ typedef struct
 	int spd;
 }MOTOR_Typedef;
 
-void MOTOR_Direction(Turn d, uint8_t index);
-void MOTOR_Straight(Direction d);
+void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm);
+void MOTOR_Straight(Direction d, int16_t pwm);
 float MOTOR_CountSpeed(uint8_t index);
 
 extern MOTOR_Typedef motor[5];			//4个电机的方向和速度

@@ -97,6 +97,7 @@ void Error_Handler(void);
 #define Encoder1A_GPIO_Port GPIOA
 #define Encoder1B_Pin GPIO_PIN_3
 #define Encoder1B_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

@@ -8,12 +8,13 @@ float p_set = 4.f;
 float i_set = 0.1f;
 float d_set = 0.f;
 
-void MOTOR_Direction(Turn d, uint8_t index)
+void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm)
 {
 	motor[index].dic = d;
 	switch (index)
 	{
 		case 1:
+			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pwm);
 			if (d == positive)
 			{
 				HAL_GPIO_WritePin(in1_1_GPIO_Port, in1_1_Pin, SET);
@@ -27,6 +28,7 @@ void MOTOR_Direction(Turn d, uint8_t index)
 			}
 			break;
 		case 2:
+			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, pwm);
 			if (d == positive)
 			{
 				HAL_GPIO_WritePin(in2_1_GPIO_Port, in2_1_Pin, SET);
@@ -40,6 +42,7 @@ void MOTOR_Direction(Turn d, uint8_t index)
 			}
 			break;
 		case 3:
+			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, pwm);
 			if (d == positive)
 			{
 				HAL_GPIO_WritePin(in3_1_GPIO_Port, in3_1_Pin, SET);
@@ -52,6 +55,7 @@ void MOTOR_Direction(Turn d, uint8_t index)
 			}
 			break;
 		case 4:
+			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, pwm);
 			if (d == positive)
 			{
 				HAL_GPIO_WritePin(in4_1_GPIO_Port, in4_1_Pin, SET);
@@ -66,27 +70,27 @@ void MOTOR_Direction(Turn d, uint8_t index)
   }
 }
 
-void MOTOR_Straight(Direction d)
+void MOTOR_Straight(Direction d, int16_t pwm)
 {
 	if (d == forward)
 	{
-		MOTOR_Direction(forward, 1);
-		MOTOR_Direction(forward, 3);
+		MOTOR_Direction(positive, 1, pwm);
+		MOTOR_Direction(positive, 3, pwm);
 	}
 	else if (d == back)
 	{
-		MOTOR_Direction(back, 1);
-		MOTOR_Direction(back, 3);
+		MOTOR_Direction(negative, 1, pwm);
+		MOTOR_Direction(negative, 3, pwm);
 	}
 	else if (d == left)
 	{
-		MOTOR_Direction(forward, 2);
-		MOTOR_Direction(forward, 4);
+		MOTOR_Direction(positive, 2, pwm);
+		MOTOR_Direction(positive, 4, pwm);
 	}
 	else if (d == right)
 	{
-		MOTOR_Direction(back, 2);
-		MOTOR_Direction(back, 4);
+		MOTOR_Direction(negative, 2, pwm);
+		MOTOR_Direction(negative, 4, pwm);
 	}
 }
 
