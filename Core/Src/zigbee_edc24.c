@@ -236,3 +236,17 @@ void setChargingPile()
 {
     HAL_UART_Transmit(zigbee_huart,zigbeeSend[1],6,HAL_MAX_DELAY);
 }
+
+void messagePrint()
+{
+	u1_printf("time:%d,gameStage:%d,gameStatus:%d,score:%f,posx:%d,posy:%d,remainDist:%d,halfTime:%d\n",
+	  getGameTime(),(int32_t)getGameStage(),(int32_t)getGameStatus(),getScore(),
+	  getVehiclePos().x,getVehiclePos().y,getRemainDist(),getHalfGameDuration());
+	u1_printf("ownPileNum:%d,oppPileNum:%d,orderNum:%d,latestOrder:(%d %d) (%d %d) %d %d %f,barrier1:(%d %d) (%d %d)\n",
+	  getOwnChargingPileNum(),getOppChargingPileNum(),getOrderNum(),
+	  getLatestPendingOrder().depPos.x,getLatestPendingOrder().depPos.y,
+	  getLatestPendingOrder().desPos.x,getLatestPendingOrder().desPos.y,
+	  getLatestPendingOrder().timeLimit,getLatestPendingOrder().orderId,getLatestPendingOrder().commission,
+	  getOneBarrier(0).pos_1.x,getOneBarrier(0).pos_1.y,getOneBarrier(0).pos_2.x,getOneBarrier(0).pos_2.y);
+}
+

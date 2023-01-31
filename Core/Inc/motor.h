@@ -3,6 +3,8 @@
 
 #include "main.h"
 #include "tim.h"
+#include "zigbee_edc24.h"
+#include "algorithm.h"
 
 #define PID_MAX 1000
 #define PID_MIN -1000
@@ -20,7 +22,7 @@ typedef struct
 
 void PID_Init(PID_Typedef *pid, float p_set, float i_set, float d_set);
 void PID_Clear(PID_Typedef *pid);
-int PID_Calculate(PID_Typedef *pid, float set_value, float now_value );
+int PID_Calculate(PID_Typedef *pid, float set_value, float now_value);
 
 typedef enum
 {
@@ -45,9 +47,12 @@ typedef struct
 void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm);
 void MOTOR_Straight(Direction d, int16_t pwm);
 float MOTOR_CountSpeed(uint8_t index);
+void MOTOR_Standby(void);
+void MOTOR_Move(Position_edc24 destination);
 
 extern MOTOR_Typedef motor[5];			//4个电机的方向和速度
 extern PID_Typedef pid_speed[5];		//4个电机的pid
+extern PID_Typedef pid_x, pid_y;
 
 extern int PWM[5];						//电机的PWM输入量
 

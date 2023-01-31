@@ -1,7 +1,8 @@
 #include "motor.h"
 
 MOTOR_Typedef motor[5];
-PID_Typedef pid[5];
+PID_Typedef pid_speed[5];
+PID_Typedef pid_x, pid_y;
 
 int PWM[5];
 float p_set = 4.f;
@@ -126,6 +127,16 @@ float MOTOR_CountSpeed(uint8_t index)
   		  break;
   }
 }
+
+void MOTOR_Standby()
+{
+	for (int index = 1; index <= 4; index++)
+		MOTOR_Direction(forward, index, 0);
+}
+
+
+
+
 /**
   * @brief Initialize PID
   * @param pid: the pid controller
@@ -174,3 +185,16 @@ int PID_Calculate(PID_Typedef *pid, float set_value, float now_value )
 	if( set_value == 0 )			pid->I = 0;
 	return(int)(pid->Kp*pid->P  +  pid->Ki*pid->I  +  pid->Kd*pid->D);
 }
+
+
+void MOTOR_Move(Position_edc24 destination)
+{
+	now = getVehiclePos();
+	int PWM_x = PID_Calculate(&pid_x, (float)destination.x, (float)now.x);
+	int PWM_y = PID_Calculate(&pid_y, (float_t)destination.y, (float)now.y);
+	if (PWM_x > 0)	MOTOR_Straight(right, PWM_x);
+	else if (PWM_x < 0)	MOTOR_Straight(left, -PWM_x);
+	if (PWM_y > 0)	MOTOR_Straight(forward, PWM_y);
+	else if (PWM_y < 0)	MOTOR_Straight(back, -PWM_y);
+}
+

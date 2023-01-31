@@ -29,6 +29,7 @@
 #include <string.h>
 #include "motor.h"
 #include "zigbee_edc24.h"
+#include "algorithm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -120,7 +121,9 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
   zigbee_Init(&huart2);
   u1_printf("hello\n");
-  MOTOR_Straight(forward, 600);
+  PID_Init(&pid_x, p_set, i_set, d_set);
+  PID_Init(&pid_y, p_set, i_set, d_set);
+  send_status = fetch;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -131,16 +134,16 @@ int main(void)
 	  {
 		reqGameInfo();
 		zigbeeMessageRecord();
-		u1_printf("time:%d,gameStage:%d,gameStatus:%d,score:%f,posx:%d,posy:%d,remainDist:%d,halfTime:%d\n",
-		  getGameTime(),(int32_t)getGameStage(),(int32_t)getGameStatus(),getScore(),
-		  getVehiclePos().x,getVehiclePos().y,getRemainDist(),getHalfGameDuration());
-		u1_printf("ownPileNum:%d,oppPileNum:%d,orderNum:%d,latestOrder:(%d %d) (%d %d) %d %d %f,barrier1:(%d %d) (%d %d)\n",
-		  getOwnChargingPileNum(),getOppChargingPileNum(),getOrderNum(),
-		  getLatestPendingOrder().depPos.x,getLatestPendingOrder().depPos.y,
-		  getLatestPendingOrder().desPos.x,getLatestPendingOrder().desPos.y,
-		  getLatestPendingOrder().timeLimit,getLatestPendingOrder().orderId,getLatestPendingOrder().commission,
-		  getOneBarrier(0).pos_1.x,getOneBarrier(0).pos_1.y,getOneBarrier(0).pos_2.x,getOneBarrier(0).pos_2.y);
-//		HAL_Delay(100);
+		while(getGameStatus() == GameStandby)
+			MOTOR_Standby();
+		if (send_status == fetch)
+		{
+			get_path(getLatestPendingOrder().desPos);
+			for(int trans = 1; trans <= cnt; trans++)
+			{
+				MOTOR_Move(path[cnt]);
+			}
+		}
 	  }
     /* USER CODE END WHILE */
 

@@ -21,3 +21,4 @@
 ../Core/Src/zigbee_edc24.c:220:16:getOneOppPile	32	static
 ../Core/Src/zigbee_edc24.c:230:6:reqGameInfo	8	static
 ../Core/Src/zigbee_edc24.c:235:6:setChargingPile	8	static
+../Core/Src/zigbee_edc24.c:240:6:messagePrint	296	static

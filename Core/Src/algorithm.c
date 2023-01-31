@@ -1,24 +1,12 @@
-#include<stdio.h>
-#include<stdbool.h>
-#include<stdint.h>
-#include<math.h>
+#include "algorithm.h"
 
-//---------------------
-typedef struct
-{
-	int x,y;//int32_t
-}Position_edc24;
-struct Order
-{
-	Position_edc24 p;
-}provider[1005],receiver[1005];
-//---------------------
-
+Order_edc24 order[1005];
 Position_edc24 transpoint[5];
 Position_edc24 now;
 Position_edc24 path[10];
+SendStatus send_status;
 
-int num_of_order;//int16_t
+int16_t num_of_order;//int16_t
 int8_t cnt;
 
 Position_edc24 pos_pair(int x,int y)
@@ -127,7 +115,7 @@ void get_path(Position_edc24 destination)
 {
 //找路
 	Position_edc24 nearest_transpoint;
-
+	now = getVehiclePos();
 	cnt=0;
 	path[cnt]=now;
 	if(check_cross_wall(path[cnt],destination))
@@ -152,6 +140,7 @@ void output_path()
 	printf("cnt:%d\n",cnt);
 	for(int8_t i=1;i<=cnt;++i)
 		printf("%d %d\n",path[i].x,path[i].y);
+	memset(path, 0, sizeof(path));
 }
 
 //int main()
