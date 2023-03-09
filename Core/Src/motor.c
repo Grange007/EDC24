@@ -5,8 +5,8 @@ PID_Typedef pid_speed[5];
 PID_Typedef pid_x, pid_y;
 
 int PWM[5];
-float p_set = 4.f;
-float i_set = 0.1f;
+float p_set = 10.f;
+float i_set = 10.f;
 float d_set = 0.f;
 
 void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm)

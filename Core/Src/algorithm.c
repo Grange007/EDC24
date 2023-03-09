@@ -7,7 +7,10 @@ Position_edc24 path[10];
 SendStatus send_status;
 
 int16_t num_of_order;//int16_t
-int8_t cnt;
+int8_t cnt;//目前的道路中一共有的中转点的数量
+int8_t cnt_run = 0;//找到自己在目前的道路中正在前往哪个中转点
+Position_edc24 next_point;
+
 
 Position_edc24 pos_pair(int x,int y)
 {
@@ -114,6 +117,7 @@ void extend_path(Position_edc24 a,Position_edc24 b)
 void get_path(Position_edc24 destination)
 {
 //找路
+	memset(path, 0, sizeof(path));
 	Position_edc24 nearest_transpoint;
 	now = getVehiclePos();
 	cnt=0;
@@ -143,30 +147,24 @@ void output_path()
 	memset(path, 0, sizeof(path));
 }
 
-//int main()
-//{
-//	//门口中间的中转点坐标
-//	transpoint[1].x=127;
-//	transpoint[1].y=39;
-//	transpoint[2].x=39;
-//	transpoint[2].y=127;
-//	transpoint[3].x=127;
-//	transpoint[3].y=215;
-//	transpoint[4].x=215;
-//	transpoint[4].y=127;
-//
-//	scanf("%d%d",&now .x,&now.y);//小车当前位置
-//	scanf("%d",&num_of_order);//订单数量，可以没有，没有就把下面的for改成while
-//
-//	for(int8_t i=1;i<=num_of_order;++i)
-//	{
-//		scanf("%d%d",&provider[i].p.x,&provider[i].p.y);//订单信息
-//		scanf("%d%d",&receiver[i].p.x,&receiver[i].p.y);
-//
-//		get_path(provider[i].p);//取外卖
-//		output_path();
-//		get_path(receiver[i].p);//送外卖
-//		output_path();
-//	}
-//	return 0;
-//}
+Position_edc24 find_point()
+{
+	for (int8_t i = 1; i <= cnt; i++)
+	{
+		if (abs(getVehiclePos().x - path[i].x) <= 7 && abs(getVehiclePos().y - path[i].y) <= 7)
+			cnt_run = i;
+	}
+	return path[cnt_run + 1];
+}
+
+void orderInit()
+{
+	if (getVehiclePos().x >= 245)
+	{
+		order_sending.depPos.x = 0;
+		order_sending.depPos.y = 0;
+		order_sending.desPos.x = 0;
+		order_sending.desPos.y = 0;
+	}
+}
+

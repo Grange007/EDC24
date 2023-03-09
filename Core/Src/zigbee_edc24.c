@@ -13,6 +13,8 @@ uint8_t zigbeeSend[2][6]={0x55,0xAA,0x00,0x00,0x00,0x00,0x55,0xAA,0x02,0x00,0x00
 uint8_t receive_flag=0;
 UART_HandleTypeDef* zigbee_huart;
 
+Order_edc24 order_sending;
+
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
   if (huart == zigbee_huart)
@@ -249,4 +251,5 @@ void messagePrint()
 	  getLatestPendingOrder().timeLimit,getLatestPendingOrder().orderId,getLatestPendingOrder().commission,
 	  getOneBarrier(0).pos_1.x,getOneBarrier(0).pos_1.y,getOneBarrier(0).pos_2.x,getOneBarrier(0).pos_2.y);
 }
+
 

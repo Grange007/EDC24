@@ -22,6 +22,8 @@ extern Position_edc24 path[10];
 
 extern int16_t num_of_order;//int16_t
 extern int8_t cnt;
+extern int8_t cnt_run;//找到自己在目前的道路中正在前往哪个中转点
+extern Position_edc24 next_point;
 
 
 Position_edc24 pos_pair(int x,int y);
@@ -32,6 +34,8 @@ Position_edc24 get_extension_transpoint(Position_edc24 a,Position_edc24 b);
 void extend_path(Position_edc24 a,Position_edc24 b);
 void get_path(Position_edc24 destination);
 void output_path();
+Position_edc24 find_point();
+void orderInit(void);
 
 
 #endif /* INC_ALGORITHM_H_ */
