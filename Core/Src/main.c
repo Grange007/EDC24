@@ -31,6 +31,7 @@
 #include "zigbee_edc24.h"
 #include "algorithm.h"
 #include "jy62.h"
+#include "pid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,10 +65,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance==TIM1)
 	{
+		int32_t cnt_x  = __HAL_TIM_GET_COUNTER(&htim3);
+		cnt_x = (int16_t)cnt_x;
+		__HAL_TIM_SET_COUNTER(&htim3, 0);
+		motor_speed_x = (float)cnt_x * 1000 / circle * 2 * PI * radius;
+
+		int32_t cnt_y  = __HAL_TIM_GET_COUNTER(&htim2);
+		cnt_y = (int16_t)cnt_y;
+		__HAL_TIM_SET_COUNTER(&htim2, 0);
+		motor_speed_y = (float)cnt_y * 1000 / circle * 2 * PI * radius;
+
+		u1_printf("1 speed: %f 2 speed: %f \n", motor_speed_x, motor_speed_y);
 		if(receive_flag)
 		{
 			reqGameInfo();
 			zigbeeMessageRecord();
+
 		}
 
 	}
@@ -130,8 +143,8 @@ int main(void)
   zigbee_Init(&huart2);
   jy62_Init(&huart3);
   u1_printf("hello\n");
-  PID_Init(&pid_x, p_set, i_set, d_set);
-  PID_Init(&pid_y, p_set, i_set, d_set);
+  PID_Init_S(&pid_x, p_ex_set, p_set, i_set, d_set, straight_x);
+  PID_Init_S(&pid_y, p_ex_set, p_set, i_set, d_set, straight_y);
   MOTOR_Standby();
   send_status = fetch;
   SetBaud(115200);
@@ -162,7 +175,7 @@ int main(void)
 				if (order_sending.depPos.x == 0 && order_sending.depPos.y == 0 && order_sending.desPos.x == 0 && order_sending.desPos.y == 0)
 				{
 					send_status = fetch;
-					order_sending = getLatestPendingOrder();//防止不停获取新坐�??????
+					order_sending = getLatestPendingOrder();//防止不停获取新坐�???????
 				}
 				else
 				{

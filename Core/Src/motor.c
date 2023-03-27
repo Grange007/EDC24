@@ -1,13 +1,9 @@
 #include "motor.h"
+#include "pid.h"
 
 MOTOR_Typedef motor[5];
-PID_Typedef pid_speed[5];
-PID_Typedef pid_x, pid_y;
-
+float motor_speed_x, motor_speed_y;
 int PWM[5];
-float p_set = 10.f;
-float i_set = 0.5f;
-float d_set = 3.f;
 
 void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm)
 {
@@ -135,71 +131,11 @@ void MOTOR_Standby()
 }
 
 
-
-
-/**
-  * @brief Initialize PID
-  * @param pid: the pid controller
-  * @param p_set: Kp of a specific pid controller
-  * @param i_set: Ki of a specific pid controller
-  * @param d_set: Kd of a specific pid controller
-*/
-void PID_Init(PID_Typedef *pid, float p_set, float i_set, float d_set)
-{
-  pid->Kp = p_set;
-  pid->Ki = i_set;
-  pid->Kd = d_set;
-  pid->P = 0.f;
-  pid->I = 0.f;
-  pid->D = 0.f;
-  pid->Error_Last = 0.f;
-}
-
-/**
- * @brief clear the former status of a pid controller
- * @param pid: the pid controller
-*/
-void PID_Clear(PID_Typedef *pid)
-{
-  pid->P = 0;
-  pid->I = 0;
-  pid->D = 0;
-  pid->Error_Last = 0;
-}
-
-
-/**
- * @brief Calculate PID
- * @param pid: which pid controller
- * @param set_value: the target value
- * @param now_value: the current value
- * @return the pwm to be applied
-*/
-int PID_Calculate(PID_Typedef *pid, float set_value, float now_value )
-{
-	const int max_value = 8000;
-	const int min_balue = 3000;
-	pid->P = set_value - now_value;
-	pid->I += pid->P;
-	pid->D = pid->P - pid->Error_Last;
-	pid->Error_Last = pid->P;
-//	pid->P = (pid->Kp*pid->P) > 10000 ? 100 : pid->P;
-//	pid->P = (pid->Kp*pid->P) < -10000 ? -100 : pid->P;
-	if( set_value == 0 )	pid->I = 0;
-	int ans = (int)(pid->Kp*pid->P  +  pid->Ki*pid->I  +  pid->Kd*pid->D);
-	if (ans > max_value) return max_value;
-	if (ans < -max_value) return -max_value;
-	if (ans < min_balue && ans > 0) return min_balue;
-	if (ans > -min_balue && ans < 0) return -min_balue;
-	return(int)(pid->Kp*pid->P  +  pid->Ki*pid->I  +  pid->Kd*pid->D);
-}
-
-
 void MOTOR_Move(Position_edc24 destination)
 {
 	now = getVehiclePos();
-	int PWM_x = abs (destination.x - now.x) >= 8 ? PID_Calculate(&pid_x, (float)destination.x, (float)now.x) : 0;
-	int PWM_y = abs (destination.y - now.y) >= 8 ? PID_Calculate(&pid_y, (float)destination.y, (float)now.y) : 0;
+	int PWM_x = abs (destination.x - now.x) >= 8 ? PID_Calculate_S(&pid_x, (float)destination.x, (float)now.x) : 0;
+	int PWM_y = abs (destination.y - now.y) >= 8 ? PID_Calculate_S(&pid_y, (float)destination.y, (float)now.y) : 0;
 //	u1_printf("%f %f %f PWM_x=%d ", pid_x.P, pid_x.I, pid_x.D, PWM_x);
 //	u1_printf("%f %f %f PWM_y=%d\n", pid_y.P, pid_y.I, pid_y.D, PWM_y);
 	if (PWM_x >= 0)	MOTOR_Straight(right, PWM_x);

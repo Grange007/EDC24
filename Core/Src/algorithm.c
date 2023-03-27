@@ -190,8 +190,8 @@ void orderInit()
 		memset(path, 0, sizeof(path));
 		cnt = 0;
 		cnt_run = 0;
-		PID_Clear(&pid_x);
-		PID_Clear(&pid_y);
+		PID_Clear_S(&pid_x);
+		PID_Clear_S(&pid_y);
 
 }
 
