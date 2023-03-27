@@ -38,6 +38,8 @@ extern UART_HandleTypeDef huart1;
 
 extern UART_HandleTypeDef huart2;
 
+extern UART_HandleTypeDef huart3;
+
 /* USER CODE BEGIN Private defines */
 #define MAX_LEN 16
 #define RX_BUF_LEN 6
@@ -48,6 +50,7 @@ extern int rx_len;
 
 void MX_USART1_UART_Init(void);
 void MX_USART2_UART_Init(void);
+void MX_USART3_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 void u1_printf(char* fmt, ...);

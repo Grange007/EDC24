@@ -4,5 +4,5 @@
 ../Core/Src/motor.c:131:6:MOTOR_Standby	16	static
 ../Core/Src/motor.c:147:6:PID_Init	24	static
 ../Core/Src/motor.c:162:6:PID_Clear	16	static
-../Core/Src/motor.c:178:5:PID_Calculate	32	static
-../Core/Src/motor.c:190:6:MOTOR_Move	32	static
+../Core/Src/motor.c:178:5:PID_Calculate	48	static
+../Core/Src/motor.c:198:6:MOTOR_Move	32	static

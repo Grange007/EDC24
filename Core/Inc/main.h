@@ -65,6 +65,10 @@ void Error_Handler(void);
 #define Encoder3A_GPIO_Port GPIOA
 #define Encoder3B_Pin GPIO_PIN_1
 #define Encoder3B_GPIO_Port GPIOA
+#define hc05_TX_Pin GPIO_PIN_2
+#define hc05_TX_GPIO_Port GPIOA
+#define hc05_RX_Pin GPIO_PIN_3
+#define hc05_RX_GPIO_Port GPIOA
 #define Encoder2A_Pin GPIO_PIN_6
 #define Encoder2A_GPIO_Port GPIOA
 #define Encoder2B_Pin GPIO_PIN_7
@@ -93,10 +97,20 @@ void Error_Handler(void);
 #define PWM3_GPIO_Port GPIOA
 #define PWM4_Pin GPIO_PIN_11
 #define PWM4_GPIO_Port GPIOA
+#define reset_Pin GPIO_PIN_12
+#define reset_GPIO_Port GPIOA
 #define Encoder1A_Pin GPIO_PIN_15
 #define Encoder1A_GPIO_Port GPIOA
+#define jy62_TX_Pin GPIO_PIN_10
+#define jy62_TX_GPIO_Port GPIOC
+#define jy62_RX_Pin GPIO_PIN_11
+#define jy62_RX_GPIO_Port GPIOC
 #define Encoder1B_Pin GPIO_PIN_3
 #define Encoder1B_GPIO_Port GPIOB
+#define zigbee_TX_Pin GPIO_PIN_6
+#define zigbee_TX_GPIO_Port GPIOB
+#define zigbee_RX_Pin GPIO_PIN_7
+#define zigbee_RX_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

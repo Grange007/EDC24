@@ -6,8 +6,8 @@ PID_Typedef pid_x, pid_y;
 
 int PWM[5];
 float p_set = 10.f;
-float i_set = 10.f;
-float d_set = 0.f;
+float i_set = 0.5f;
+float d_set = 3.f;
 
 void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm)
 {
@@ -32,14 +32,14 @@ void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm)
 			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, pwm);
 			if (d == positive)
 			{
-				HAL_GPIO_WritePin(in2_1_GPIO_Port, in2_1_Pin, SET);
-				HAL_GPIO_WritePin(in2_2_GPIO_Port, in2_2_Pin, RESET);
+				HAL_GPIO_WritePin(in2_1_GPIO_Port, in2_1_Pin, RESET);
+				HAL_GPIO_WritePin(in2_2_GPIO_Port, in2_2_Pin, SET);
 
 			}
 			else if (d == negative)
 			{
-				HAL_GPIO_WritePin(in2_1_GPIO_Port, in2_1_Pin, RESET);
-				HAL_GPIO_WritePin(in2_2_GPIO_Port, in2_2_Pin, SET);
+				HAL_GPIO_WritePin(in2_1_GPIO_Port, in2_1_Pin, SET);
+				HAL_GPIO_WritePin(in2_2_GPIO_Port, in2_2_Pin, RESET);
 			}
 			break;
 		case 3:
@@ -59,13 +59,13 @@ void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm)
 			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, pwm);
 			if (d == positive)
 			{
-				HAL_GPIO_WritePin(in4_1_GPIO_Port, in4_1_Pin, SET);
-				HAL_GPIO_WritePin(in4_2_GPIO_Port, in4_2_Pin, RESET);
+				HAL_GPIO_WritePin(in4_1_GPIO_Port, in4_1_Pin, RESET);
+				HAL_GPIO_WritePin(in4_2_GPIO_Port, in4_2_Pin, SET);
 			}
 			else if (d == negative)
 			{
-				HAL_GPIO_WritePin(in4_1_GPIO_Port, in4_1_Pin, RESET);
-				HAL_GPIO_WritePin(in4_2_GPIO_Port, in4_2_Pin, SET);
+				HAL_GPIO_WritePin(in4_1_GPIO_Port, in4_1_Pin, SET);
+				HAL_GPIO_WritePin(in4_2_GPIO_Port, in4_2_Pin, RESET);
 			}
 			break;
   }
@@ -177,12 +177,20 @@ void PID_Clear(PID_Typedef *pid)
 */
 int PID_Calculate(PID_Typedef *pid, float set_value, float now_value )
 {
+	const int max_value = 8000;
+	const int min_balue = 3000;
 	pid->P = set_value - now_value;
 	pid->I += pid->P;
 	pid->D = pid->P - pid->Error_Last;
 	pid->Error_Last = pid->P;
-//	pid->I = pid->I>10000 ? 10000 : (pid->I<(-10000) ? (-10000) : pid->I);
-	if( set_value == 0 )			pid->I = 0;
+//	pid->P = (pid->Kp*pid->P) > 10000 ? 100 : pid->P;
+//	pid->P = (pid->Kp*pid->P) < -10000 ? -100 : pid->P;
+	if( set_value == 0 )	pid->I = 0;
+	int ans = (int)(pid->Kp*pid->P  +  pid->Ki*pid->I  +  pid->Kd*pid->D);
+	if (ans > max_value) return max_value;
+	if (ans < -max_value) return -max_value;
+	if (ans < min_balue && ans > 0) return min_balue;
+	if (ans > -min_balue && ans < 0) return -min_balue;
 	return(int)(pid->Kp*pid->P  +  pid->Ki*pid->I  +  pid->Kd*pid->D);
 }
 
@@ -190,11 +198,15 @@ int PID_Calculate(PID_Typedef *pid, float set_value, float now_value )
 void MOTOR_Move(Position_edc24 destination)
 {
 	now = getVehiclePos();
-	int PWM_x = PID_Calculate(&pid_x, (float)destination.x, (float)now.x);
-	int PWM_y = PID_Calculate(&pid_y, (float_t)destination.y, (float)now.y);
-	if (PWM_x > 0)	MOTOR_Straight(right, PWM_x);
+	int PWM_x = abs (destination.x - now.x) >= 8 ? PID_Calculate(&pid_x, (float)destination.x, (float)now.x) : 0;
+	int PWM_y = abs (destination.y - now.y) >= 8 ? PID_Calculate(&pid_y, (float)destination.y, (float)now.y) : 0;
+//	u1_printf("%f %f %f PWM_x=%d ", pid_x.P, pid_x.I, pid_x.D, PWM_x);
+//	u1_printf("%f %f %f PWM_y=%d\n", pid_y.P, pid_y.I, pid_y.D, PWM_y);
+	if (PWM_x >= 0)	MOTOR_Straight(right, PWM_x);
 	else if (PWM_x < 0)	MOTOR_Straight(left, -PWM_x);
-	if (PWM_y > 0)	MOTOR_Straight(forward, PWM_y);
+	if (PWM_y >= 0)	MOTOR_Straight(forward, PWM_y);
 	else if (PWM_y < 0)	MOTOR_Straight(back, -PWM_y);
 }
+
+
 
