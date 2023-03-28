@@ -65,17 +65,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance==TIM1)
 	{
-		int32_t cnt_x  = __HAL_TIM_GET_COUNTER(&htim3);
-		cnt_x = (int16_t)cnt_x;
-		__HAL_TIM_SET_COUNTER(&htim3, 0);
-		motor_speed_x = (float)cnt_x * 1000 / circle * 2 * PI * radius;
+//		int32_t cnt_x  = __HAL_TIM_GET_COUNTER(&htim3);
+//		cnt_x = (int16_t)cnt_x;
+//		__HAL_TIM_SET_COUNTER(&htim3, 0);
+//		motor_speed_x = (float)cnt_x * 1000 / circle * 2 * PI * radius;
+//
+//		int32_t cnt_y  = __HAL_TIM_GET_COUNTER(&htim2);
+//		cnt_y = (int16_t)cnt_y;
+//		__HAL_TIM_SET_COUNTER(&htim2, 0);
+//		motor_speed_y = (float)cnt_y * 1000 / circle * 2 * PI * radius;
 
-		int32_t cnt_y  = __HAL_TIM_GET_COUNTER(&htim2);
-		cnt_y = (int16_t)cnt_y;
-		__HAL_TIM_SET_COUNTER(&htim2, 0);
-		motor_speed_y = (float)cnt_y * 1000 / circle * 2 * PI * radius;
-
-		u1_printf("1 speed: %f 2 speed: %f \n", motor_speed_x, motor_speed_y);
+//		u1_printf("x1: %f y: %f \n", motor_speed_x, motor_speed_y);
 		if(receive_flag)
 		{
 			reqGameInfo();
@@ -161,7 +161,7 @@ int main(void)
 	if (HAL_GPIO_ReadPin(reset_GPIO_Port, reset_Pin) == GPIO_PIN_RESET){
 			orderInit();
 			MOTOR_Standby();
- 			u1_printf("RESET\n");
+// 			u1_printf("RESET\n");
 	}
 	else{
 		if(getGameStatus() == GameStandby)
@@ -175,7 +175,7 @@ int main(void)
 				if (order_sending.depPos.x == 0 && order_sending.depPos.y == 0 && order_sending.desPos.x == 0 && order_sending.desPos.y == 0)
 				{
 					send_status = fetch;
-					order_sending = getLatestPendingOrder();//防止不停获取新坐�???????
+					order_sending = getLatestPendingOrder();//防止不停获取新坐�????????
 				}
 				else
 				{
@@ -183,7 +183,8 @@ int main(void)
 					{
 						u1_printf("\n(%d,%d)", getVehiclePos().x, getVehiclePos().y);
 						u1_printf("(%d,%d)F ", order_sending.depPos.x, order_sending.depPos.y);
-						u1_printf("ROW: %f, PITCH:%f, YAW:%f	", GetRoll(), GetPitch(), GetYaw());
+						u1_printf("No.%d:(%d,%d)\n", cnt_run + 1,  next_point.x, next_point.y);
+//						u1_printf("ROW: %f, PITCH:%f, YAW:%f	", GetRoll(), GetPitch(), GetYaw());
 						get_path(order_sending.depPos);
 //						for(int trans = 1; trans <= cnt; trans++)
 //						{
@@ -191,7 +192,6 @@ int main(void)
 //						}
 						next_point = find_point();
 						MOTOR_Move(next_point);
-						u1_printf("No.%d:(%d,%d)\n", cnt_run + 1,  next_point.x, next_point.y);
 		//				u1_printf("cnt_run:%d cnt:%d", cnt_run, cnt);
 						if (cnt_run == cnt)
 						{

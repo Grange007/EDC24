@@ -30,7 +30,7 @@ typedef struct{
 
 
 void PID_Init_S(PID_typedef_S *pid, float Kp_ex_set, float Kp_set, float Ki_set, float Kd_set, PID_Instance_S instance_set);
-int PID_Calculate(PID_typedef_S *pid, float set_value, float now_value);
+int PID_Calculate_S(PID_typedef_S *pid, float set_value, float now_value);
 void PID_Clear_S(PID_typedef_S *pid);
 
 extern uint32_t pid_cnt;

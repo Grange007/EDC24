@@ -138,10 +138,11 @@ void MOTOR_Move(Position_edc24 destination)
 	int PWM_y = abs (destination.y - now.y) >= 8 ? PID_Calculate_S(&pid_y, (float)destination.y, (float)now.y) : 0;
 //	u1_printf("%f %f %f PWM_x=%d ", pid_x.P, pid_x.I, pid_x.D, PWM_x);
 //	u1_printf("%f %f %f PWM_y=%d\n", pid_y.P, pid_y.I, pid_y.D, PWM_y);
-	if (PWM_x >= 0)	MOTOR_Straight(right, PWM_x);
-	else if (PWM_x < 0)	MOTOR_Straight(left, -PWM_x);
-	if (PWM_y >= 0)	MOTOR_Straight(forward, PWM_y);
-	else if (PWM_y < 0)	MOTOR_Straight(back, -PWM_y);
+//	if (PWM_x >= 0)	MOTOR_Straight(right, PWM_x);
+//	else if (PWM_x < 0)	MOTOR_Straight(left, -PWM_x);
+//	if (PWM_y >= 0)	MOTOR_Straight(forward, PWM_y);
+//	else if (PWM_y < 0)	MOTOR_Straight(back, -PWM_y);
+	MOTOR_Straight(forward, 8000);
 }
 
 

@@ -2,7 +2,7 @@
 
 PID_typedef_S pid_x, pid_y;
 
-float p_ex_set = 10.f;
+float p_ex_set = 400.f;
 float p_set = 10.f;
 float i_set = 0.5f;
 float d_set = 3.f;
@@ -45,7 +45,8 @@ void PID_Clear_S(PID_typedef_S *pid){
 
 int PID_Calculate_S(PID_typedef_S *pid, float set_value, float now_value){
 	const int max_value = 8000;
-	const int min_balue = 3000;
+	const int min_value = 3000;
+	const int max_speed = 2000;
 	if ((pid_cnt ++ % 2) == 0){
 		pid->target_position = set_value;
 		pid->Position_now = now_value;
@@ -53,6 +54,8 @@ int PID_Calculate_S(PID_typedef_S *pid, float set_value, float now_value){
 		pid->target_speed = pid->Kp_ex * pid->err_position_now;//外环的输出就是内环的输入
 		//速度的限幅处理略
 		pid->err_position_last = pid->err_position_now;
+		if (pid->target_speed > max_speed) pid->target_speed = max_speed;
+		if (pid->target_speed < -max_speed) pid->target_speed = -max_speed;
 	}
 	if (pid->instance == straight_x) pid->Motor_speed = motor_speed_x;
 	if (pid->instance == straight_y) pid->Motor_speed = motor_speed_y;
@@ -61,10 +64,11 @@ int PID_Calculate_S(PID_typedef_S *pid, float set_value, float now_value){
 	if(pid->err_speed_i < -1000) pid->err_speed_i = -1000;//这里需要设定一个极限值，以防积分变量溢出，其实一般来说并不会达到这个极限值，因为误差并不都是正数
 	if(pid->err_speed_i > 1000) pid->err_speed_i = 1000;//这里需要设定一个极限值，以防积分变量溢出，其实一般来说并不会达到这个极限值，因为误差并不都是正数
 	pid->output = (int) pid->Kp * pid->err_speed_now + pid->Ki * pid->err_speed_i + pid->Kd * (pid->err_speed_now - pid->err_speed_last);//PID公式
+	u1_printf("target: %f, x: %f, y: %f, out: %d", pid->target_speed, motor_speed_x, motor_speed_y, pid->output);
 	pid->err_speed_last = pid->err_speed_now;//将使用完的当前误差值赋给上一次的误差值，进行下一轮循环
 	if (pid->output > max_value) return max_value;
 	if (pid->output < -max_value) return -max_value;
-	if (pid->output < min_balue && pid->output > 0) return min_balue;
-	if (pid->output > -min_balue && pid->output < 0) return -min_balue;
+	if (pid->output < min_value && pid->output > 0) return min_value;
+	if (pid->output > -min_value && pid->output < 0) return -min_value;
 	return pid->output;
 }
