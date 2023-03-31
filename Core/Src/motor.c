@@ -67,6 +67,22 @@ void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm)
   }
 }
 
+void MOTOR_Rotate(Turn d){
+	const int pwm_rotate = 1000;
+	if (d == positive){
+		MOTOR_Direction(negative, 1, pwm_rotate);
+		MOTOR_Direction(positive, 2, pwm_rotate);
+		MOTOR_Direction(positive, 3, pwm_rotate);
+		MOTOR_Direction(negative, 4, pwm_rotate);
+	}
+	if (d == negative){
+		MOTOR_Direction(negative, 3, pwm_rotate);
+		MOTOR_Direction(positive, 4, pwm_rotate);
+		MOTOR_Direction(positive, 1, pwm_rotate);
+		MOTOR_Direction(negative, 2, pwm_rotate);
+	}
+}
+
 void MOTOR_Straight(Direction d, int16_t pwm)
 {
 	if (d == forward)
@@ -138,11 +154,10 @@ void MOTOR_Move(Position_edc24 destination)
 	int PWM_y = abs (destination.y - now.y) >= 8 ? PID_Calculate_S(&pid_y, (float)destination.y, (float)now.y) : 0;
 //	u1_printf("%f %f %f PWM_x=%d ", pid_x.P, pid_x.I, pid_x.D, PWM_x);
 //	u1_printf("%f %f %f PWM_y=%d\n", pid_y.P, pid_y.I, pid_y.D, PWM_y);
-//	if (PWM_x >= 0)	MOTOR_Straight(right, PWM_x);
-//	else if (PWM_x < 0)	MOTOR_Straight(left, -PWM_x);
-//	if (PWM_y >= 0)	MOTOR_Straight(forward, PWM_y);
-//	else if (PWM_y < 0)	MOTOR_Straight(back, -PWM_y);
-	MOTOR_Straight(forward, 8000);
+	if (PWM_x >= 0)	MOTOR_Straight(right, PWM_x);
+	else if (PWM_x < 0)	MOTOR_Straight(left, -PWM_x);
+	if (PWM_y >= 0)	MOTOR_Straight(forward, PWM_y);
+	else if (PWM_y < 0)	MOTOR_Straight(back, -PWM_y);
 }
 
 

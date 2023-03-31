@@ -2,8 +2,8 @@
 
 PID_typedef_S pid_x, pid_y;
 
-float p_ex_set = 400.f;
-float p_set = 10.f;
+float p_ex_set = 8.f;
+float p_set = 1.f;
 float i_set = 0.5f;
 float d_set = 3.f;
 uint32_t pid_cnt;

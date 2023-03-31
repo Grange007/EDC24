@@ -36,6 +36,7 @@ void MOTOR_Straight(Direction d, int16_t pwm);
 float MOTOR_CountSpeed(uint8_t index);
 void MOTOR_Standby(void);
 void MOTOR_Move(Position_edc24 destination);
+void MOTOR_Rotate(Turn d);
 
 extern MOTOR_Typedef motor[5];			//4个电机的方向和速度
 

@@ -1,5 +1,6 @@
 ../Core/Src/motor.c:8:6:MOTOR_Direction	16	static
-../Core/Src/motor.c:70:6:MOTOR_Straight	16	static
-../Core/Src/motor.c:95:7:MOTOR_CountSpeed	24	static
-../Core/Src/motor.c:127:6:MOTOR_Standby	16	static
-../Core/Src/motor.c:134:6:MOTOR_Move	32	static
+../Core/Src/motor.c:70:6:MOTOR_Rotate	24	static
+../Core/Src/motor.c:86:6:MOTOR_Straight	16	static
+../Core/Src/motor.c:111:7:MOTOR_CountSpeed	24	static
+../Core/Src/motor.c:143:6:MOTOR_Standby	16	static
+../Core/Src/motor.c:150:6:MOTOR_Move	32	static
