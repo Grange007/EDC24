@@ -1,7 +1,6 @@
 #include "algorithm.h"
 #include "motor.h"
 
-Order_edc24 order[1005];
 Position_edc24 transpoint[5] = {
 		{0, 0},
 		{127, 39},
@@ -11,15 +10,19 @@ Position_edc24 transpoint[5] = {
 };
 Position_edc24 now;
 Position_edc24 path[10];
-SendStatus send_status;
+Position_edc24 simple_path[5];
 
-int16_t num_of_order;//int16_t
 int8_t cnt;//目前的道路中一共有的中转点的数量
-int8_t cnt_run = 0;//找到自己在目前的道路中正在前往哪个中转点
 Position_edc24 next_point;
 
+uint16_t order_cnt;//总共生成的订单数量
+int16_t order_id;
+Order_edc24 order[1005];//所有订单信息
+OrderStatus order_status[1005];//订单状态
 
-Position_edc24 pos_pair(int x,int y)
+bool charge;
+
+Position_edc24 pos_pair(int16_t x,int16_t y)
 {
 //为了方便，把x,y转化成position_edc24类型的点
 	Position_edc24 tmp;
@@ -111,6 +114,7 @@ Position_edc24 get_extension_transpoint(Position_edc24 a,Position_edc24 b)
 	else
 		return pos_pair(b.x,a.y);
 }
+
 void extend_path(Position_edc24 a,Position_edc24 b)
 {
 //因为只能一个方向运动，所以加了这个函数
@@ -145,15 +149,25 @@ void extend_path(Position_edc24 a,Position_edc24 b)
 
 void get_path(Position_edc24 destination)
 {
-	 cnt=0;
-	 path[cnt]=now;
-	 if(check_cross_wall(now,destination))
-	 {
-		 if(check_cross_wall(now,get_nearest_transpoint(destination)))
-			 extend_path(now,get_nearest_transpoint(now));
-		 extend_path(path[cnt],get_nearest_transpoint(destination));
-	 }
-	 extend_path(path[cnt],destination);
+	cnt=0;
+	path[cnt]=now;
+	if(check_cross_wall(now,destination))
+	{
+		if(check_cross_wall(now,get_nearest_transpoint(destination)))
+			extend_path(now,get_nearest_transpoint(now));
+		extend_path(path[cnt],get_nearest_transpoint(destination));
+	}
+	extend_path(path[cnt],destination);
+
+	uint16_t sum_dis=0;
+	for(int i=1;i<=cnt;++i)
+		sum_dis+=dis(path[i],path[i-1]);
+	if(sum_dis>2*dis(now,destination))
+	{
+		cnt=0;
+		path[cnt]=now;
+		extend_path(now,destination);
+	}
 }
 
 void output_path()
@@ -167,18 +181,68 @@ void output_path()
 	memset(path, 0, sizeof(path));
 }
 
-Position_edc24 find_point()
+Position_edc24 get_nearest_point()
 {
-	cnt_run = 0;
-	for (int8_t i = 1; i <= cnt; i++)
+	uint16_t min_dis=1000;
+	uint16_t d;
+	Position_edc24 tmp_pos;
+	if(getOrderNum()<orderMax)
+		for(uint16_t i=1;i<=order_cnt;++i)
+		{
+			d=dis(now,order[i].depPos);
+			if(order_status[order[i].orderId]==waiting&&d<min_dis)
+			{
+				min_dis=dis(now,order[i].depPos);
+				tmp_pos=order[i].depPos;
+				order_id=order[i].orderId;
+			}
+		}
+	for(uint16_t i=1;i<=order_cnt;++i)
 	{
-		int x1 = getVehiclePos().x, y1 = getVehiclePos().y;
-		int x2 = path[i].x, y2 = path[i].y;
-		if ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) <= 64)
-			if (getVehiclePos().x != 0 && getVehiclePos().y != 0)
-				cnt_run = i;
+		d=dis(now,order[i].desPos);
+		if(order_status[order[i].orderId]==loading&&d<min_dis)
+		{
+			min_dis=d;
+			tmp_pos=order[i].desPos;
+			order_id=order[i].orderId;
+		}
 	}
-	return path[cnt_run + 1];
+	return tmp_pos;
+}
+
+void store_order()
+{
+	Order_edc24 tmp_order=getLatestPendingOrder();
+	if(order_status[tmp_order.orderId]==unknown||order_status[tmp_order.orderId]==finishing)
+	{
+		order_status[tmp_order.orderId]=waiting;
+		order[++order_cnt]=tmp_order;
+	}
+}
+
+Position_edc24 check_power()
+{
+	uint16_t min_dis=1000;
+	uint16_t sum_dis=0;
+	uint8_t ex_dis=20;
+	int32_t remain_dis=getRemainDist();
+	Position_edc24 tmp;
+	for(int i=1;i<=3;++i)
+	{
+		Position_edc24 tmp_pile=getOneOwnPile(i);
+		if(min_dis>dis(now,tmp_pile))
+		{
+			min_dis=dis(now,tmp_pile);
+			tmp=tmp_pile;
+		}
+	}
+	if(min_dis>remain_dis+ex_dis)
+		return tmp;
+	for(int i=1;i<=cnt;++i)
+		sum_dis+=dis(path[i],path[i-1]);
+	if(remain_dis<sum_dis)
+		return tmp;
+	return pos_pair(0,0);
 }
 
 void orderInit()
@@ -188,10 +252,11 @@ void orderInit()
 		order_sending.desPos.x = 0;
 		order_sending.desPos.y = 0;
 		memset(path, 0, sizeof(path));
+		memset(order, 0, sizeof(order));
+		memset(order_status, 0, sizeof(order_status));
 		cnt = 0;
-		cnt_run = 0;
+		order_cnt = 0;
 		PID_Clear_S(&pid_x);
 		PID_Clear_S(&pid_y);
-
 }
 
