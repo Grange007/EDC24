@@ -5,7 +5,8 @@
 #include "usart.h"
 typedef enum{
 	straight_x,
-	straight_y
+	straight_y,
+	rotate
 }PID_Instance_S;
 
 typedef struct{
@@ -35,11 +36,15 @@ void PID_Clear_S(PID_typedef_S *pid);
 
 extern uint32_t pid_cnt;
 
-extern PID_typedef_S pid_x, pid_y;
+extern PID_typedef_S pid_x, pid_y, pid_rotate;
 extern float p_ex_set;
 extern float p_set;						//设置pid的系数
 extern float i_set;
 extern float d_set;
+extern float rp_ex_set;
+extern float rp_set;
+extern float ri_set;
+extern float rd_set;
 ////外环PID
 //void PID_OUT(){
 //	err_position_now = target_position - position_now;

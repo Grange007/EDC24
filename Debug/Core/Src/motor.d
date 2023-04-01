@@ -26,7 +26,7 @@ Core/Src/motor.o: ../Core/Src/motor.c ../Core/Inc/motor.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
  ../Core/Inc/tim.h ../Core/Inc/zigbee_edc24.h ../Core/Inc/algorithm.h \
  ../Core/Inc/pid.h ../Core/Inc/motor.h ../Core/Inc/usart.h \
- ../Core/Inc/pid.h
+ ../Core/Inc/pid.h ../Core/Inc/jy62.h
 ../Core/Inc/motor.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
@@ -61,3 +61,4 @@ Core/Src/motor.o: ../Core/Src/motor.c ../Core/Inc/motor.h \
 ../Core/Inc/motor.h:
 ../Core/Inc/usart.h:
 ../Core/Inc/pid.h:
+../Core/Inc/jy62.h:

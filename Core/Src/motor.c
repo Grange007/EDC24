@@ -1,5 +1,6 @@
 #include "motor.h"
 #include "pid.h"
+#include "jy62.h"
 
 MOTOR_Typedef motor[5];
 float motor_speed_x, motor_speed_y;
@@ -68,7 +69,10 @@ void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm)
 }
 
 void MOTOR_Rotate(Turn d){
-	const int pwm_rotate = 1000;
+	float anglee = GetYaw();
+	int pwm_rotate;
+	if (anglee >= 0 && anglee < 90)	pwm_rotate = abs(PID_Calculate_S(&pid_rotate, 0, anglee));
+	else if (anglee <= 360 && anglee > 270)	pwm_rotate = abs(PID_Calculate_S(&pid_rotate, 360, anglee));
 	if (d == positive){
 		MOTOR_Direction(negative, 1, pwm_rotate);
 		MOTOR_Direction(positive, 2, pwm_rotate);
@@ -152,8 +156,8 @@ void MOTOR_Move(Position_edc24 destination)
 	now = getVehiclePos();
 	int PWM_x = abs (destination.x - now.x) >= 8 ? PID_Calculate_S(&pid_x, (float)destination.x, (float)now.x) : 0;
 	int PWM_y = abs (destination.y - now.y) >= 8 ? PID_Calculate_S(&pid_y, (float)destination.y, (float)now.y) : 0;
-//	u1_printf("%f %f %f PWM_x=%d ", pid_x.P, pid_x.I, pid_x.D, PWM_x);
-//	u1_printf("%f %f %f PWM_y=%d\n", pid_y.P, pid_y.I, pid_y.D, PWM_y);
+	u1_printf("PWM_x=%d ", PWM_x);
+	u1_printf("%PWM_y=%d\n",PWM_y);
 	if (PWM_x >= 0)	MOTOR_Straight(right, PWM_x);
 	else if (PWM_x < 0)	MOTOR_Straight(left, -PWM_x);
 	if (PWM_y >= 0)	MOTOR_Straight(forward, PWM_y);

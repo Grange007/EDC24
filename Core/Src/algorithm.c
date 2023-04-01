@@ -223,15 +223,15 @@ void set_pile()
 	now=getVehiclePos();
 	if((now.x-39)*(now.x-39)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==0)
 		setChargingPile();
-	if((now.x-127)*(now.x-127)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==1)
+	else if((now.x-127)*(now.x-127)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==1)
 		setChargingPile();
-	if((now.x-215)*(now.x-215)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==2)
+	else if((now.x-215)*(now.x-215)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==2)
 		setChargingPile();
-	if(getOwnChargingPileNum()==0)
+	else if(getOwnChargingPileNum()==0)
 		next_point=pos_pair(39,127);
-	if(getOwnChargingPileNum()==1)
+	else if(getOwnChargingPileNum()==1)
 		next_point=pos_pair(127,127);
-	if(getOwnChargingPileNum()==2)
+	else if(getOwnChargingPileNum()==2)
 		next_point=pos_pair(215,127);
 }
 

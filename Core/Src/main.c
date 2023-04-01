@@ -147,6 +147,7 @@ int main(void)
   u1_printf("hello\n");
   PID_Init_S(&pid_x, p_ex_set, p_set, i_set, d_set, straight_x);
   PID_Init_S(&pid_y, p_ex_set, p_set, i_set, d_set, straight_y);
+  PID_Init_S(&pid_rotate, rp_ex_set, rp_set, ri_set, rd_set, rotate);
   MOTOR_Standby();
   SetBaud(115200);
   SetHorizontal();
@@ -159,7 +160,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	 u1_printf("YAW:%f	", GetYaw());
+	u1_printf("YAW:%f	", GetYaw());
 	if(getGameStage()==Prematch)
 		orderInit();
 	if (HAL_GPIO_ReadPin(reset_GPIO_Port, reset_Pin) == GPIO_PIN_RESET){
@@ -171,6 +172,12 @@ int main(void)
 		if(getGameStatus() == GameStandby)
 		{
 			MOTOR_Standby();
+		}
+		else if (GetYaw() > 5 && GetYaw() < 90){
+			MOTOR_Rotate(negative);
+		}
+		else if (GetYaw() < 355 && GetYaw() > 270){
+			MOTOR_Rotate(positive);
 		}
 		else
 		{
@@ -188,17 +195,26 @@ int main(void)
 //			{
 //				u1_printf("(%d,%d)--", path[trans].x, path[trans].y);
 //			}
-			Position_edc24 tmp=check_power();
-			if(tmp.x!= 0||tmp.y!= 0)
-			{
-				next_point=tmp;
-				get_path(next_point);
-				charge=true;
+			if (getGameStage() == SecondHalf){
+				Position_edc24 tmp=check_power();
+				if(tmp.x!= 0||tmp.y!= 0)
+				{
+					next_point=tmp;
+					get_path(next_point);
+					charge=true;
+				}
 			}
-			MOTOR_Move(path[1]);
+
+			now=getVehiclePos();
+			int trans;
+			for(trans=1;trans<=cnt;++trans)
+				if((now.x-path[trans].x)*(now.x-path[trans].x)+(now.y-path[trans].y)*(now.y-path[trans].y)>64)
+					break;
+			MOTOR_Move(path[trans]);
+			u1_printf("path:(%d, %d)  ", path[trans].x, path[trans].y);
 //			u1_printf("No.%d:(%d,%d)\n", cnt_run + 1,  next_point.x, next_point.y);
 //			u1_printf("cnt_run:%d cnt:%d", cnt_run, cnt);
-			u1_printf("\tnow:(%d,%d)", getVehiclePos().x, getVehiclePos().y);
+			u1_printf("\tnow:(%d,%d)\n", getVehiclePos().x, getVehiclePos().y);
 			now=getVehiclePos();
 			if((now.x-next_point.x)*(now.x-next_point.x)+(now.y-next_point.y)*(now.y-next_point.y)<=64)
 			{

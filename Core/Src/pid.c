@@ -1,11 +1,16 @@
 #include "pid.h"
 
-PID_typedef_S pid_x, pid_y;
+PID_typedef_S pid_x, pid_y, pid_rotate;
 
-float p_ex_set = 8.f;
-float p_set = 1.f;
-float i_set = 0.5f;
-float d_set = 3.f;
+float p_ex_set = 10.f;
+float p_set = 4.f;
+float i_set = 0.1f;
+float d_set = 1.f;
+
+float rp_ex_set = 15.f;
+float rp_set = 3.f;
+float ri_set = 0.25f;
+float rd_set = 0.05f;
 uint32_t pid_cnt;
 
 void PID_Init_S(PID_typedef_S *pid, float Kp_ex_set, float Kp_set, float Ki_set, float Kd_set, PID_Instance_S instance_set){
@@ -59,16 +64,20 @@ int PID_Calculate_S(PID_typedef_S *pid, float set_value, float now_value){
 	}
 	if (pid->instance == straight_x) pid->Motor_speed = motor_speed_x;
 	if (pid->instance == straight_y) pid->Motor_speed = motor_speed_y;
+	if (pid->instance == rotate) pid->Motor_speed = motor_speed_x;
 	pid->err_speed_now = pid->target_speed - pid->Motor_speed;
 	pid->err_speed_i += pid->err_speed_now;
-	if(pid->err_speed_i < -1000) pid->err_speed_i = -1000;//这里需要设定一个极限值，以防积分变量溢出，其实一般来说并不会达到这个极限值，因为误差并不都是正数
-	if(pid->err_speed_i > 1000) pid->err_speed_i = 1000;//这里需要设定一个极限值，以防积分变量溢出，其实一般来说并不会达到这个极限值，因为误差并不都是正数
+	if(pid->err_speed_i < -50000) pid->err_speed_i = -50000;//这里需要设定一个极限值，以防积分变量溢出，其实一般来说并不会达到这个极限值，因为误差并不都是正数
+	if(pid->err_speed_i > 50000) pid->err_speed_i = 50000;//这里需要设定一个极限值，以防积分变量溢出，其实一般来说并不会达到这个极限值，因为误差并不都是正数
 	pid->output = (int) pid->Kp * pid->err_speed_now + pid->Ki * pid->err_speed_i + pid->Kd * (pid->err_speed_now - pid->err_speed_last);//PID公式
-	u1_printf("target: %f, x: %f, y: %f, out: %d", pid->target_speed, motor_speed_x, motor_speed_y, pid->output);
+	u1_printf("target: %f, x: %f, y: %f, out: %d\n", pid->target_speed, motor_speed_x, motor_speed_y, pid->output);
 	pid->err_speed_last = pid->err_speed_now;//将使用完的当前误差值赋给上一次的误差值，进行下一轮循环
 	if (pid->output > max_value) return max_value;
 	if (pid->output < -max_value) return -max_value;
-	if (pid->output < min_value && pid->output > 0) return min_value;
-	if (pid->output > -min_value && pid->output < 0) return -min_value;
+	if (pid->instance == straight_x || pid->instance == straight_y){
+		if (pid->output < min_value && pid->output > 0) return min_value;
+		if (pid->output > -min_value && pid->output < 0) return -min_value;
+	}
+
 	return pid->output;
 }
