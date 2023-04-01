@@ -10,7 +10,6 @@ Position_edc24 transpoint[5] = {
 };
 Position_edc24 now;
 Position_edc24 path[10];
-Position_edc24 simple_path[5];
 
 int8_t cnt;//目前的道路中一共有的中转点的数量
 Position_edc24 next_point;
@@ -45,14 +44,14 @@ bool check_cross_wall(Position_edc24 a,Position_edc24 b)
 		return 0;
 	if(a.x==b.x)
 	{
-		if((a.x>=38&&a.x<=107)||(a.x>=147)&&(a.x<=216))
+		if((a.x>=38&&a.x<=107)||(a.x>=147&&a.x<=216))
 			if((a.y>=39&&b.y<=39)||(a.y<=39&&b.y>=39)||(a.y>=215&&b.y<=215)||(a.y<=215&&b.y>=215))
 				return 1;
 		return 0;
 	}
 	if(a.y==b.y)
 	{
-		if((a.y>=38&&a.y<=107)||(a.y>=147)&&(a.y<=216))
+		if((a.y>=38&&a.y<=107)||(a.y>=147&&a.y<=216))
 			if((a.x>=39&&b.x<=39)||(a.x<=39&&b.x>=39)||(a.x>=215&&b.x<=215)||(a.x<=215&&b.x>=215))
 				return 1;
 		return 0;
@@ -125,28 +124,6 @@ void extend_path(Position_edc24 a,Position_edc24 b)
 	path[++cnt]=b;
 }
 
-//void get_path(Position_edc24 destination)
-//{
-////找路
-//	memset(path, 0, sizeof(path));
-//	Position_edc24 nearest_transpoint;
-//	now = getVehiclePos();
-//	cnt=0;
-//	path[cnt]=now;
-//	if(check_cross_wall(path[cnt],destination))
-//	{
-//		nearest_transpoint=get_nearest_transpoint(now);
-//		extend_path(path[cnt],nearest_transpoint);
-//		if(check_cross_wall(path[cnt],destination))
-//		{
-//			nearest_transpoint=get_nearest_transpoint(destination);
-//			extend_path(path[cnt],nearest_transpoint);
-//		}
-//	}
-//	extend_path(path[cnt],destination);
-//}
-
-
 void get_path(Position_edc24 destination)
 {
 	cnt=0;
@@ -185,14 +162,14 @@ Position_edc24 get_nearest_point()
 {
 	uint16_t min_dis=1000;
 	uint16_t d;
-	Position_edc24 tmp_pos;
+	Position_edc24 tmp_pos=pos_pair(0,0);
 	if(getOrderNum()<orderMax)
 		for(uint16_t i=1;i<=order_cnt;++i)
 		{
 			d=dis(now,order[i].depPos);
 			if(order_status[order[i].orderId]==waiting&&d<min_dis)
 			{
-				min_dis=dis(now,order[i].depPos);
+				min_dis=d;
 				tmp_pos=order[i].depPos;
 				order_id=order[i].orderId;
 			}
@@ -213,17 +190,17 @@ Position_edc24 get_nearest_point()
 void store_order()
 {
 	Order_edc24 tmp_order=getLatestPendingOrder();
-	if(order_status[tmp_order.orderId]==unknown||order_status[tmp_order.orderId]==finishing)
+	if(tmp_order.orderId!=0&&(order_status[tmp_order.orderId]==unknown||order_status[tmp_order.orderId]==finishing))
 	{
 		order_status[tmp_order.orderId]=waiting;
 		order[++order_cnt]=tmp_order;
 	}
+//	u1_printf("\torder_cnt:%d orderId:%d\n",order_cnt,tmp_order.orderId);
 }
 
 Position_edc24 check_power()
 {
 	uint16_t min_dis=1000;
-	uint16_t sum_dis=0;
 	uint8_t ex_dis=20;
 	int32_t remain_dis=getRemainDist();
 	Position_edc24 tmp;
@@ -236,13 +213,26 @@ Position_edc24 check_power()
 			tmp=tmp_pile;
 		}
 	}
-	if(min_dis>remain_dis+ex_dis)
-		return tmp;
-	for(int i=1;i<=cnt;++i)
-		sum_dis+=dis(path[i],path[i-1]);
-	if(remain_dis<sum_dis)
+	if(min_dis+ex_dis>remain_dis)
 		return tmp;
 	return pos_pair(0,0);
+}
+
+void set_pile()
+{
+	now=getVehiclePos();
+	if((now.x-39)*(now.x-39)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==0)
+		setChargingPile();
+	if((now.x-127)*(now.x-127)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==1)
+		setChargingPile();
+	if((now.x-215)*(now.x-215)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==2)
+		setChargingPile();
+	if(getOwnChargingPileNum()==0)
+		next_point=pos_pair(39,127);
+	if(getOwnChargingPileNum()==1)
+		next_point=pos_pair(127,127);
+	if(getOwnChargingPileNum()==2)
+		next_point=pos_pair(215,127);
 }
 
 void orderInit()
@@ -255,8 +245,9 @@ void orderInit()
 		memset(order, 0, sizeof(order));
 		memset(order_status, 0, sizeof(order_status));
 		cnt = 0;
+		next_point=pos_pair(0,0);
 		order_cnt = 0;
+		charge=false;
 		PID_Clear_S(&pid_x);
 		PID_Clear_S(&pid_y);
 }
-

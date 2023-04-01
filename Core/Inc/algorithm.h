@@ -32,6 +32,7 @@ extern OrderStatus order_status[1005];
 
 extern bool charge;
 
+
 Position_edc24 pos_pair(int16_t x,int16_t y);
 uint16_t dis(Position_edc24 a,Position_edc24 b);
 bool check_cross_wall(Position_edc24 a,Position_edc24 b);

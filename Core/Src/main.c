@@ -90,7 +90,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 	{
 
 	  jy62MessageRecord();
-	  u1_printf("ROW: %f, PITCH:%f, YAW:%f	\n", GetRoll(), GetPitch(), GetYaw());
+//	  u1_printf("ROW: %f, PITCH:%f, YAW:%f	\n", GetRoll(), GetPitch(), GetYaw());
 
 	}
 }
@@ -159,9 +159,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	store_order();
+	 u1_printf("YAW:%f	", GetYaw());
+	if(getGameStage()==Prematch)
+		orderInit();
 	if (HAL_GPIO_ReadPin(reset_GPIO_Port, reset_Pin) == GPIO_PIN_RESET){
 		orderInit();
+		InitAngle();
 		MOTOR_Standby();
 	}
 	else{
@@ -171,44 +174,47 @@ int main(void)
 		}
 		else
 		{
-			setChargingPile();
-	//		u1_printf("%d	", (int)getOwnChargingPileNum());
-			u1_printf("\n(%d,%d)", getVehiclePos().x, getVehiclePos().y);
-			u1_printf("(%d,%d)S ", order_sending.desPos.x, order_sending.desPos.y);
-			u1_printf("ROW: %f, PITCH:%f, YAW:%f	", GetRoll(), GetPitch(), GetYaw());
+			if(getGameStage()==FirstHalf&&getOwnChargingPileNum()<3)
+				set_pile();
+			store_order();
+//			u1_printf("\t%d", (int)getOwnChargingPileNum());
+//			printf("ROW: %f, PITCH:%f, YAW:%f	", GetRoll(), GetPitch(), GetYaw());
 			if(next_point.x == 0 && next_point.y == 0)
-			  next_point=get_nearest_point();
-			for(int trans = 1; trans <= cnt; trans++)
-			{
-				u1_printf("(%d,%d)--", path[trans].x, path[trans].y);
-			}
-			get_path(next_point);
+				next_point=get_nearest_point();
+			u1_printf("\tnext_point:(%d,%d)",next_point.x,next_point.y);
+			if(next_point.x!=0||next_point.y!=0)
+				get_path(next_point);
+//			for(int trans = 1; trans <= cnt; trans++)
+//			{
+//				u1_printf("(%d,%d)--", path[trans].x, path[trans].y);
+//			}
 			Position_edc24 tmp=check_power();
-			if(tmp.x != 0 || tmp.y != 0)
+			if(tmp.x!= 0||tmp.y!= 0)
 			{
-			  get_path(tmp);
-			  charge=true;
+				next_point=tmp;
+				get_path(next_point);
+				charge=true;
 			}
 			MOTOR_Move(path[1]);
-		//				  u1_printf("No.%d:(%d,%d)\n", cnt_run + 1,  next_point.x, next_point.y);
-		//   				u1_printf("cnt_run:%d cnt:%d", cnt_run, cnt);
+//			u1_printf("No.%d:(%d,%d)\n", cnt_run + 1,  next_point.x, next_point.y);
+//			u1_printf("cnt_run:%d cnt:%d", cnt_run, cnt);
+			u1_printf("\tnow:(%d,%d)", getVehiclePos().x, getVehiclePos().y);
 			now=getVehiclePos();
 			if((now.x-next_point.x)*(now.x-next_point.x)+(now.y-next_point.y)*(now.y-next_point.y)<=64)
 			{
-			  next_point=pos_pair(0,0);
-			  if(!charge)
-			  {
-				if(order_status[order[order_id].orderId]==waiting)
-				  order_status[order[order_id].orderId]=loading;
-				if(order_status[order[order_id].orderId]==loading)
-				  order_status[order[order_id].orderId]=finishing;
-			  }
-			  else
-				charge=false;
+				next_point=pos_pair(0,0);
+				if(!charge)
+				{
+					if(order_status[order_id]==waiting)
+						order_status[order_id]=loading;
+					else if(order_status[order_id]==loading)
+						order_status[order_id]=finishing;
+				}
+				else
+					charge=false;
 			}
 		}
 	}
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
