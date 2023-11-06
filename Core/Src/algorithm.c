@@ -20,6 +20,7 @@ Order_edc24 order[1005];//所有订单信息
 OrderStatus order_status[1005];//订单状态
 
 bool charge;
+bool pile[3];
 
 Position_edc24 pos_pair(int16_t x,int16_t y)
 {
@@ -195,6 +196,9 @@ void store_order()
 		order_status[tmp_order.orderId]=waiting;
 		order[++order_cnt]=tmp_order;
 	}
+	uint8_t tmp_num=getOrderNum();
+	for(uint8_t i=1;i<=tmp_num;++i)
+		order_status[getOneOrder(i).orderId]=loading;
 //	u1_printf("\torder_cnt:%d orderId:%d\n",order_cnt,tmp_order.orderId);
 }
 
@@ -221,18 +225,27 @@ Position_edc24 check_power()
 void set_pile()
 {
 	now=getVehiclePos();
-	if((now.x-39)*(now.x-39)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==0)
+	if((now.x-39)*(now.x-39)+(now.y-130)*(now.y-130)<=100&&!pile[0])
+	{
 		setChargingPile();
-	else if((now.x-127)*(now.x-127)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==1)
-		setChargingPile();
-	else if((now.x-215)*(now.x-215)+(now.y-127)*(now.y-127)<=64&&getOwnChargingPileNum()==2)
-		setChargingPile();
-	else if(getOwnChargingPileNum()==0)
-		next_point=pos_pair(39,127);
-	else if(getOwnChargingPileNum()==1)
-		next_point=pos_pair(127,127);
-	else if(getOwnChargingPileNum()==2)
-		next_point=pos_pair(215,127);
+		pile[0]=true;
+	}
+	if((now.x-127)*(now.x-127)+(now.y-130)*(now.y-130)<=100&&!pile[1])
+	{
+			setChargingPile();
+			pile[1]=true;
+	}
+	if((now.x-215)*(now.x-215)+(now.y-130)*(now.y-130)<=100&&!pile[2])
+	{
+			setChargingPile();
+			pile[2]=true;
+	}
+//	if(!pile[0])
+//		next_point=pos_pair(39,130);
+	if(!pile[1])
+		next_point=pos_pair(127,130);
+//	else if(!pile[2])
+//		next_point=pos_pair(215,130);
 }
 
 void orderInit()
@@ -244,6 +257,7 @@ void orderInit()
 		memset(path, 0, sizeof(path));
 		memset(order, 0, sizeof(order));
 		memset(order_status, 0, sizeof(order_status));
+		memset(pile, 0, sizeof(pile));
 		cnt = 0;
 		next_point=pos_pair(0,0);
 		order_cnt = 0;

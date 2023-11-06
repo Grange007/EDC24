@@ -71,8 +71,16 @@ void MOTOR_Direction(Turn d, uint8_t index, int16_t pwm)
 void MOTOR_Rotate(Turn d){
 	float anglee = GetYaw();
 	int pwm_rotate;
-	if (anglee >= 0 && anglee < 90)	pwm_rotate = abs(PID_Calculate_S(&pid_rotate, 0, anglee));
+	const int max_pwm = 1300;
+	if (anglee >= 0 && anglee < 90) pwm_rotate = abs(PID_Calculate_S(&pid_rotate, 0, anglee));
 	else if (anglee <= 360 && anglee > 270)	pwm_rotate = abs(PID_Calculate_S(&pid_rotate, 360, anglee));
+	if (anglee > 0 && anglee < 5) pwm_rotate = 1200;
+	else if (anglee > 355 && anglee < 360) pwm_rotate = 1200;
+	else if (anglee > 0 && anglee < 0.5) pwm_rotate = 800;
+	else if (anglee > 357 && anglee < 360) pwm_rotate = 800;
+	else if (anglee > 0 && anglee < 0.2) pwm_rotate = 400;
+	else if (anglee > 359 && anglee < 360) pwm_rotate = 400;
+	if(pwm_rotate > max_pwm) pwm_rotate = max_pwm;
 	if (d == positive){
 		MOTOR_Direction(negative, 1, pwm_rotate);
 		MOTOR_Direction(positive, 2, pwm_rotate);

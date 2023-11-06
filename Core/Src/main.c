@@ -161,8 +161,11 @@ int main(void)
   while (1)
   {
 	u1_printf("YAW:%f	", GetYaw());
-	if(getGameStage()==Prematch)
+	if(getGameStage()==Prematch){
 		orderInit();
+		MOTOR_Standby();
+	}
+
 	if (HAL_GPIO_ReadPin(reset_GPIO_Port, reset_Pin) == GPIO_PIN_RESET){
 		orderInit();
 		InitAngle();
@@ -173,16 +176,18 @@ int main(void)
 		{
 			MOTOR_Standby();
 		}
-		else if (GetYaw() > 5 && GetYaw() < 90){
+		else if (GetYaw() > 5 && GetYaw() < 180){
 			MOTOR_Rotate(negative);
 		}
-		else if (GetYaw() < 355 && GetYaw() > 270){
+		else if (GetYaw() < 355 && GetYaw() > 180){
 			MOTOR_Rotate(positive);
 		}
 		else
 		{
-			if(getGameStage()==FirstHalf&&getOwnChargingPileNum()<3)
+			if(getGameStage()==FirstHalf&&!pile[1])
 				set_pile();
+			if(pile[1])
+				setChargingPile();
 			store_order();
 //			u1_printf("\t%d", (int)getOwnChargingPileNum());
 //			printf("ROW: %f, PITCH:%f, YAW:%f	", GetRoll(), GetPitch(), GetYaw());
