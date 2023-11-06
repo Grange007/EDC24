@@ -29,6 +29,9 @@
 #include <string.h>
 #include "motor.h"
 #include "zigbee_edc24.h"
+#include "algorithm.h"
+#include "jy62.h"
+#include "pid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,7 +51,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -63,17 +65,32 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance==TIM1)
 	{
-		SPEED = MOTOR_CountSpeed();
-		PWM = PID_Calculate(&pid_speed, SET_SPEED, SPEED);
-		PWM = PWM > 900 ? 900 : PWM;
-		PWM = PWM < -900 ? -900 : PWM;
-		__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, PWM);
+		int32_t cnt_x  = __HAL_TIM_GET_COUNTER(&htim3);
+		cnt_x = (int16_t)cnt_x;
+		__HAL_TIM_SET_COUNTER(&htim3, 0);
+		motor_speed_x = (float)cnt_x * 1000 / circle * 2 * PI * radius;
+
+		int32_t cnt_y  = __HAL_TIM_GET_COUNTER(&htim2);
+		cnt_y = (int16_t)cnt_y;
+		__HAL_TIM_SET_COUNTER(&htim2, 0);
+		motor_speed_y = (float)cnt_y * 1000 / circle * 2 * PI * radius;
+
+		if(receive_flag)
+		{
+			reqGameInfo();
+			zigbeeMessageRecord();
+
+		}
+
 	}
 }
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 {
-	if(huart==&huart1)
+	if(huart==&huart3)
 	{
+
+	  jy62MessageRecord();
+//	  u1_printf("ROW: %f, PITCH:%f, YAW:%f	\n", GetRoll(), GetPitch(), GetYaw());
 
 	}
 }
@@ -114,41 +131,115 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM5_Init();
   MX_TIM8_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  MOTOR_Direction(forward);
-  PID_Init(&pid_speed, p_set, i_set, d_set);
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+
   HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
+  HAL_GPIO_WritePin(reset_GPIO_Port, reset_Pin, GPIO_PIN_SET);
   zigbee_Init(&huart2);
+  jy62_Init(&huart3);
   u1_printf("hello\n");
+  PID_Init_S(&pid_x, p_ex_set, p_set, i_set, d_set, straight_x);
+  PID_Init_S(&pid_y, p_ex_set, p_set, i_set, d_set, straight_y);
+  PID_Init_S(&pid_rotate, rp_ex_set, rp_set, ri_set, rd_set, rotate);
+  MOTOR_Standby();
+  SetBaud(115200);
+  SetHorizontal();
+  InitAngle();
+  Calibrate();
+  SleepOrAwake();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(receive_flag)
-	  {
-		reqGameInfo();
-		zigbeeMessageRecord();
-		u1_printf("time:%d,gameStage:%d,gameStatus:%d,score:%f,posx:%d,posy:%d,remainDist:%d,halfTime:%d\n",
-		  getGameTime(),(int32_t)getGameStage(),(int32_t)getGameStatus(),getScore(),
-		  getVehiclePos().x,getVehiclePos().y,getRemainDist(),getHalfGameDuration());
-		u1_printf("ownPileNum:%d,oppPileNum:%d,orderNum:%d,latestOrder:(%d %d) (%d %d) %d %d %f,barrier1:(%d %d) (%d %d)\n",
-		  getOwnChargingPileNum(),getOppChargingPileNum(),getOrderNum(),
-		  getLatestPendingOrder().depPos.x,getLatestPendingOrder().depPos.y,
-		  getLatestPendingOrder().desPos.x,getLatestPendingOrder().desPos.y,
-		  getLatestPendingOrder().timeLimit,getLatestPendingOrder().orderId,getLatestPendingOrder().commission,
-		  getOneBarrier(0).pos_1.x,getOneBarrier(0).pos_1.y,getOneBarrier(0).pos_2.x,getOneBarrier(0).pos_2.y);
-//		HAL_Delay(100);
-	  }
+	u1_printf("YAW:%f	", GetYaw());
+	if(getGameStage()==Prematch){
+		orderInit();
+		MOTOR_Standby();
+	}
+
+	if (HAL_GPIO_ReadPin(reset_GPIO_Port, reset_Pin) == GPIO_PIN_RESET){
+		orderInit();
+		InitAngle();
+		MOTOR_Standby();
+	}
+	else{
+		if(getGameStatus() == GameStandby)
+		{
+			MOTOR_Standby();
+		}
+		else if (GetYaw() > 5 && GetYaw() < 180){
+			MOTOR_Rotate(negative);
+		}
+		else if (GetYaw() < 355 && GetYaw() > 180){
+			MOTOR_Rotate(positive);
+		}
+		else
+		{
+			if(getGameStage()==FirstHalf&&!pile[1])
+				set_pile();
+			if(pile[1])
+				setChargingPile();
+			store_order();
+//			u1_printf("\t%d", (int)getOwnChargingPileNum());
+//			printf("ROW: %f, PITCH:%f, YAW:%f	", GetRoll(), GetPitch(), GetYaw());
+			if(next_point.x == 0 && next_point.y == 0)
+				next_point=get_nearest_point();
+			u1_printf("\tnext_point:(%d,%d)",next_point.x,next_point.y);
+			if(next_point.x!=0||next_point.y!=0)
+				get_path(next_point);
+//			for(int trans = 1; trans <= cnt; trans++)
+//			{
+//				u1_printf("(%d,%d)--", path[trans].x, path[trans].y);
+//			}
+			if (getGameStage() == SecondHalf){
+				Position_edc24 tmp=check_power();
+				if(tmp.x!= 0||tmp.y!= 0)
+				{
+					next_point=tmp;
+					get_path(next_point);
+					charge=true;
+				}
+			}
+
+			now=getVehiclePos();
+			int trans;
+			for(trans=1;trans<=cnt;++trans)
+				if((now.x-path[trans].x)*(now.x-path[trans].x)+(now.y-path[trans].y)*(now.y-path[trans].y)>64)
+					break;
+			MOTOR_Move(path[trans]);
+			u1_printf("path:(%d, %d)  ", path[trans].x, path[trans].y);
+//			u1_printf("No.%d:(%d,%d)\n", cnt_run + 1,  next_point.x, next_point.y);
+//			u1_printf("cnt_run:%d cnt:%d", cnt_run, cnt);
+			u1_printf("\tnow:(%d,%d)\n", getVehiclePos().x, getVehiclePos().y);
+			now=getVehiclePos();
+			if((now.x-next_point.x)*(now.x-next_point.x)+(now.y-next_point.y)*(now.y-next_point.y)<=64)
+			{
+				next_point=pos_pair(0,0);
+				if(!charge)
+				{
+					if(order_status[order_id]==waiting)
+						order_status[order_id]=loading;
+					else if(order_status[order_id]==loading)
+						order_status[order_id]=finishing;
+				}
+				else
+					charge=false;
+			}
+		}
+	}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+}
   /* USER CODE END 3 */
 }
 

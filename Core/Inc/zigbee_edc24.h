@@ -60,7 +60,9 @@ Position_edc24 getOneOppPile(uint8_t pileNo);       //获取一个对方充电�
 
 void reqGameInfo(void);                             //请求游戏基本信息
 void setChargingPile(void);                         //设置充电桩
+void messagePrint(void);							//打印所有信息
 
 
+extern Order_edc24 order_sending;
 
 #endif

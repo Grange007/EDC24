@@ -61,7 +61,7 @@ main-build: PID.elf secondary-outputs
 
 # Tool invocations
 PID.elf PID.map: $(OBJS) $(USER_OBJS) C:\Users\86138\Desktop\program\STM32\PID\STM32F103RCTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "PID.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\86138\Desktop\program\STM32\PID\STM32F103RCTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PID.map" -Wl,--gc-sections -static  -mfloat-abi=soft -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "PID.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\86138\Desktop\program\STM32\PID\STM32F103RCTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PID.map" -Wl,--gc-sections -static  -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
